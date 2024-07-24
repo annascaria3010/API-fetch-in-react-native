@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   SafeAreaView,
   StatusBar,
@@ -7,9 +7,9 @@ import {
   useColorScheme,
   View,
   Image,
-  FlatList,
   ActivityIndicator,
   TouchableOpacity,
+  ScrollView,
 } from 'react-native';
 import { Colors } from 'react-native/Libraries/NewAppScreen';
 
@@ -18,6 +18,7 @@ export default function App() {
   const [error, setError] = useState(null);
   const [response, setResponse] = useState([]);
   const [showProducts, setShowProducts] = useState(false);
+  const [selected, setSelected] = useState(null);
 
   const isDarkMode = useColorScheme() === 'dark';
   const backgroundStyle = {
@@ -43,12 +44,25 @@ export default function App() {
 
   const handleHomePress = () => {
     setShowProducts(false);
+    setSelected(null);
+  };
+
+  const handleSingleSelection = (getCurrentId) => {
+    setSelected(getCurrentId === selected ? null : getCurrentId);
   };
 
   const renderProduct = ({ item }) => (
-    <View style={styles.itemContainer}>
-      <Image source={{ uri: item.image }} style={styles.image} />
+    <View key={item.id} style={styles.item}>
       <Text style={styles.title}>{item.title}</Text>
+      <TouchableOpacity onPress={() => handleSingleSelection(item.id)}>
+        <Image source={{ uri: item.image }} style={styles.image} />
+      </TouchableOpacity>
+      {selected === item.id ? (
+        <View style={styles.content}>
+          <Text style={styles.price}>Price: ${item.price}</Text>
+          <Text style={styles.price}>Rate: {item.rating.rate}</Text>
+        </View>
+      ) : null}
     </View>
   );
 
@@ -64,12 +78,17 @@ export default function App() {
     if (showProducts) {
       return (
         <>
-          <FlatList
-            data={response}
-            renderItem={renderProduct}
-            keyExtractor={item => item.id.toString()}
-            contentContainerStyle={styles.list}
-          />
+          <ScrollView style={styles.wrapper}>
+            <View style={styles.accordion}>
+              {response && response.length > 0 ? (
+                response.map((item) => renderProduct({ item }))
+              ) : (
+                <View>
+                  <Text>No data found</Text>
+                </View>
+              )}
+            </View>
+          </ScrollView>
           <TouchableOpacity style={styles.button} onPress={handleHomePress}>
             <Text style={styles.buttonText}>Home</Text>
           </TouchableOpacity>
@@ -108,23 +127,38 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#fff',
   },
-  list: {
-    padding: 16,
+  wrapper: {
+    padding: 10,
   },
-  itemContainer: {
-    marginBottom: 16,
+  accordion: {
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 5,
+  },
+  item: {
+    borderBottomWidth: 1,
+    borderBottomColor: '#ddd',
+    padding: 10,
     alignItems: 'center',
   },
   image: {
     width: 150,
     height: 150,
     resizeMode: 'contain',
+    marginVertical: 10,
   },
   title: {
-    marginTop: 8,
     fontSize: 16,
     fontWeight: 'bold',
     textAlign: 'center',
+  },
+  content: {
+    padding: 10,
+    alignItems: 'center',
+  },
+  price: {
+    fontSize: 18,
+    fontWeight: 'bold',
   },
   button: {
     backgroundColor: '#000',
