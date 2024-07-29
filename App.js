@@ -94,7 +94,7 @@ export default function App() {
       .then(res => res.json())
       .then(
         (result) => {
-          setResponse([...response, result]);
+          setResponse([result, ...response]); // Prepend the new product to the response array
           setTitle('');
           setPrice('');
           setRating('');
@@ -174,18 +174,20 @@ export default function App() {
         <View style={styles.content}>
           <Text style={styles.price}>Price: ${item.price}</Text>
           <Text style={styles.rating}>Rating: {item.rating.rate}</Text>
-          <TouchableOpacity
-            style={styles.deleteButton}
-            onPress={() => handleDeleteProduct(item.id)}
-          >
-            <Text style={styles.deleteButtonText}>Delete</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.editButton}
-            onPress={() => handleEditProduct(item)}
-          >
-            <Text style={styles.editButtonText}>Edit</Text>
-          </TouchableOpacity>
+          <View style={styles.buttonRow}>
+            <TouchableOpacity
+              style={styles.deleteButton}
+              onPress={() => handleDeleteProduct(item.id)}
+            >
+              <Text style={styles.deleteButtonText}>Delete</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.editButton}
+              onPress={() => handleEditProduct(item)}
+            >
+              <Text style={styles.editButtonText}>Edit</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       ) : null}
     </View>
@@ -384,5 +386,11 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  buttonRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '60%',
+    marginTop: 10,
   },
 });
