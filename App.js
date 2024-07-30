@@ -93,12 +93,9 @@ export default function App() {
 
       const result = await response.json();
 
-      // Ensure products is an array before spreading
       const updatedProducts = [result, ...(Array.isArray(products) ? products : [])];
-    setProducts(updatedProducts);
-
-    // Console the updated products array
-    console.log('Updated Products:', updatedProducts);
+      setProducts(updatedProducts);
+      console.log('Updated Products:', updatedProducts);
 
       setTitle('');
       setPrice('');
@@ -121,15 +118,13 @@ export default function App() {
     setImage(product.image);
   };
 
-  const handleUpdateProduct = (id) => {
+  const handleUpdateProduct = () => {
     const updatedProduct = {
       title: title,
       price: parseFloat(price),
-      rating: {
-          rate: parseFloat(rating),
-          count: 1,
-        },
+      description: 'Updated description',
       image: image,
+      category: 'electronic',
     };
 
     fetch(`https://fakestoreapi.com/products/${isEditingProduct}`, {
@@ -192,7 +187,7 @@ export default function App() {
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.editButton}
-              onPress={() => handleEditProduct(item.id)}
+              onPress={() => handleEditProduct(item)}
             >
               <Text style={styles.editButtonText}>Edit</Text>
             </TouchableOpacity>
@@ -212,7 +207,7 @@ export default function App() {
     }
 
     if (showProducts) {
-      console.log('Products:', products);
+      console.log('Products:', products); // Log the products array
       return (
         <>
           <ScrollView style={styles.wrapper}>
@@ -277,7 +272,7 @@ export default function App() {
                 />
                 <TextInput
                   style={styles.input}
-                  placeholder="Image"
+                  placeholder="Image URL"
                   value={image}
                   onChangeText={setImage}
                 />
