@@ -17,7 +17,7 @@ import { Colors } from 'react-native/Libraries/NewAppScreen';
 export default function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [response, setResponse] = useState([]);
+  const [products, setProducts] = useState([]);
   const [showProducts, setShowProducts] = useState(false);
   const [selected, setSelected] = useState(null);
   const [isAddingProduct, setIsAddingProduct] = useState(false);
@@ -41,11 +41,11 @@ export default function App() {
   const fetchProducts = () => {
     setIsLoading(true);
     fetch('https://fakestoreapi.com/products')
-      .then(res => res.json())
+      .then((res) => res.json())
       .then(
         (result) => {
           setIsLoading(false);
-          setResponse(result);
+          setProducts(result);
         },
         (error) => {
           setIsLoading(false);
@@ -69,43 +69,44 @@ export default function App() {
     setSelected(getCurrentId === selected ? null : getCurrentId);
   };
 
-  const handleAddProduct = () => {
+  const handleAddProduct = async () => {
     setIsAddingProduct(true);
-  };
 
-  const handleSaveProduct = () => {
-    const newProduct = {
-      title: title,
-      price: parseFloat(price),
-      rating: {
-        rate: parseFloat(rating),
-        count: 1,
-      },
-      image: image,
-    };
-
-    fetch('https://fakestoreapi.com/products', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(newProduct),
-    })
-      .then(res => res.json())
-      .then(
-        (result) => {
-          setResponse([result, ...response]); // Prepend the new product to the response array
-          setTitle('');
-          setPrice('');
-          setRating('');
-          setImage('');
-          setShowProducts(true);
-          setIsAddingProduct(false);
+    try {
+      const newProduct = {
+        title: title,
+        price: parseFloat(price),
+        rating: {
+          rate: parseFloat(rating),
+          count: 1,
         },
-        (error) => {
-          setError(error);
-        }
-      );
+        image: image,
+      };
+
+      const response = await fetch('https://fakestoreapi.com/products', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newProduct),
+      });
+
+      const result = await response.json();
+
+      // Ensure products is an array before spreading
+      setProducts((prevProducts) => [result, ...(Array.isArray(prevProducts) ? prevProducts : [])]);
+
+      setTitle('');
+      setPrice('');
+      setRating('');
+      setImage('');
+      setShowProducts(true);
+      setIsAddingProduct(false);
+    } catch (error) {
+      console.error('Error adding new post:', error);
+      setError('Failed to add new post.');
+      setIsAddingProduct(false);
+    }
   };
 
   const handleEditProduct = (product) => {
@@ -132,10 +133,12 @@ export default function App() {
       },
       body: JSON.stringify(updatedProduct),
     })
-      .then(res => res.json())
+      .then((res) => res.json())
       .then(
         (result) => {
-          setResponse(response.map(product => (product.id === isEditingProduct ? result : product)));
+          setProducts((prevProducts) =>
+            prevProducts.map((product) => (product.id === isEditingProduct ? result : product))
+          );
           setTitle('');
           setPrice('');
           setRating('');
@@ -154,7 +157,7 @@ export default function App() {
       method: 'DELETE',
     })
       .then(() => {
-        setResponse(response.filter(product => product.id !== id));
+        setProducts((prevProducts) => prevProducts.filter((product) => product.id !== id));
         if (selected === id) {
           setSelected(null);
         }
@@ -207,8 +210,8 @@ export default function App() {
         <>
           <ScrollView style={styles.wrapper}>
             <View style={styles.accordion}>
-              {response && response.length > 0 ? (
-                response.map((item) => renderProduct({ item }))
+              {products && products.length > 0 ? (
+                products.map((item) => renderProduct({ item }))
               ) : (
                 <View>
                   <Text>No data found</Text>
@@ -239,7 +242,7 @@ export default function App() {
               <Text style={styles.buttonText}>View Products</Text>
             </TouchableOpacity>
             {!isAddingProduct && !isEditingProduct && (
-              <TouchableOpacity style={styles.button} onPress={handleAddProduct}>
+              <TouchableOpacity style={styles.button} onPress={() => setIsAddingProduct(true)}>
                 <Text style={styles.buttonText}>Add Product</Text>
               </TouchableOpacity>
             )}
@@ -272,7 +275,7 @@ export default function App() {
                   onChangeText={setImage}
                 />
                 {isAddingProduct && (
-                  <TouchableOpacity style={styles.button} onPress={handleSaveProduct}>
+                  <TouchableOpacity style={styles.button} onPress={handleAddProduct}>
                     <Text style={styles.buttonText}>Save</Text>
                   </TouchableOpacity>
                 )}
