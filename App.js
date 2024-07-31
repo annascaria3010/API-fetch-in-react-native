@@ -101,7 +101,6 @@ export default function App() {
       setPrice('');
       setRating('');
       setImage('');
-      setShowProducts(true);
       setIsAddingProduct(false);
     } catch (error) {
       console.error('Error adding new post:', error);
@@ -145,7 +144,6 @@ export default function App() {
           setRating('');
           setImage('');
           setIsEditingProduct(null);
-          setShowProducts(true);
         },
         (error) => {
           setError(error);
