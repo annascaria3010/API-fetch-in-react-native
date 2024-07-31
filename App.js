@@ -111,7 +111,7 @@ export default function App() {
     setIsEditingProduct(product.id);
     setTitle(product.title);
     setPrice(product.price.toString());
-    setRating(product.rating.rate.toString());
+    setRating(product.rating?.rate.toString() || '');
     setImage(product.image);
   };
 
@@ -173,7 +173,7 @@ export default function App() {
       {selected === item.id ? (
         <View style={styles.content}>
           <Text style={styles.price}>Price: ${item.price}</Text>
-          <Text style={styles.rating}>Rating: {item.rating.rate}</Text>
+          <Text style={styles.rating}>Rating: {item.rating?.rate || 'N/A'}</Text>
           <View style={styles.buttonRow}>
             <TouchableOpacity
               style={styles.deleteButton}
