@@ -15,7 +15,7 @@ import {
 import { Colors } from 'react-native/Libraries/NewAppScreen';
 
 export default function App() {
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [products, setProducts] = useState([]);
   const [showProducts, setShowProducts] = useState(false);
@@ -33,10 +33,8 @@ export default function App() {
   };
 
   useEffect(() => {
-    if (showProducts) {
-      fetchProducts();
-    }
-  }, [showProducts]);
+    fetchProducts();
+  }, []);
 
   const fetchProducts = () => {
     setIsLoading(true);
@@ -95,7 +93,7 @@ export default function App() {
 
       const updatedProducts = [result, ...(Array.isArray(products) ? products : [])];
       setProducts(updatedProducts);
-      console.log('Updated Products:', updatedProducts);
+      console.log('Updated Products:', updatedProducts);  // <-- Log the updated products
 
       setTitle('');
       setPrice('');
