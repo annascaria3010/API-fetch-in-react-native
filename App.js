@@ -119,9 +119,11 @@ export default function App() {
     const updatedProduct = {
       title: title,
       price: parseFloat(price),
-      description: 'Updated description',
+      rating: {
+          rate: parseFloat(rating),
+          count: 1,
+        },
       image: image,
-      category: 'electronic',
     };
 
     fetch(`https://fakestoreapi.com/products/${isEditingProduct}`, {
