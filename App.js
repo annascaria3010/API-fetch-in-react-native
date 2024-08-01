@@ -80,6 +80,8 @@ export default function App() {
         },
         image: image,
       };
+      
+      console.log('New Product:', newProduct); // Log the new product
 
       const response = await fetch('https://fakestoreapi.com/products', {
         method: 'POST',
@@ -90,6 +92,7 @@ export default function App() {
       });
 
       const result = await response.json();
+      result.rating = newProduct.rating;  // Manually add the rating to the result
 
       const updatedProducts = [result, ...(Array.isArray(products) ? products : [])];
       setProducts(updatedProducts);
@@ -124,6 +127,7 @@ export default function App() {
           count: 1,
         },
       image: image,
+
     };
 
     fetch(`https://fakestoreapi.com/products/${isEditingProduct}`, {
@@ -165,35 +169,43 @@ export default function App() {
         setError(error);
       });
   };
-
-  const renderProduct = ({ item }) => (
-    <View key={item.id} style={styles.item}>
-      <Text style={styles.title}>{item.title}</Text>
-      <TouchableOpacity onPress={() => handleSingleSelection(item.id)}>
-        <Image source={{ uri: item.image }} style={styles.image} />
-      </TouchableOpacity>
-      {selected === item.id ? (
-        <View style={styles.content}>
-          <Text style={styles.price}>Price: ${item.price}</Text>
-          <Text style={styles.rating}>Rating: {item.rating?.rate || 'N/A'}</Text>
-          <View style={styles.buttonRow}>
-            <TouchableOpacity
-              style={styles.deleteButton}
-              onPress={() => handleDeleteProduct(item.id)}
-            >
-              <Text style={styles.deleteButtonText}>Delete</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.editButton}
-              onPress={() => handleEditProduct(item)}
-            >
-              <Text style={styles.editButtonText}>Edit</Text>
-            </TouchableOpacity>
+  
+  const renderProduct = ({ item }) => {
+    console.log('Rendering product:', item); // Console log for item
+    const rate = item.rating?.rate || 'N/A';
+    console.log(item.rating,"checking the code");
+    console.log('Product rate:', rate);
+    return (
+      <View key={item.id} style={styles.item}>
+        <Text style={styles.title}>{item.title}</Text>
+        <TouchableOpacity onPress={() => handleSingleSelection(item.id)}>
+          <Image source={{ uri: item.image }} style={styles.image} />
+        </TouchableOpacity>
+        {selected === item.id ? (
+          <View style={styles.content}>
+            <Text style={styles.price}>Price: ${item.price}</Text>
+            <Text style={styles.rating}>Rating: {item.rating?.rate || 'N/A'}</Text>
+            <View style={styles.buttonRow}>
+              <TouchableOpacity
+                style={styles.deleteButton}
+                onPress={() => handleDeleteProduct(item.id)}
+              >
+                <Text style={styles.deleteButtonText}>Delete</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.editButton}
+                onPress={() => handleEditProduct(item)}
+              >
+                <Text style={styles.editButtonText}>Edit</Text>
+              </TouchableOpacity>
+            </View>
           </View>
-        </View>
-      ) : null}
-    </View>
-  );
+        ) : null}
+      </View>
+    );
+  };
+
+ 
 
   const getContent = () => {
     if (isLoading) {
@@ -210,6 +222,7 @@ export default function App() {
         <>
           <ScrollView style={styles.wrapper}>
             <View style={styles.accordion}>
+
               {products && products.length > 0 ? (
                 products.map((item) => renderProduct({ item }))
               ) : (
@@ -258,14 +271,20 @@ export default function App() {
                   style={styles.input}
                   placeholder="Price"
                   value={price}
-                  onChangeText={setPrice}
+                  onChangeText={(text) => {
+                    setPrice(text);
+                    console.log('Price:', text);
+                  }}
                   keyboardType="numeric"
                 />
                 <TextInput
                   style={styles.input}
                   placeholder="Rating"
                   value={rating}
-                  onChangeText={setRating}
+                  onChangeText={(text) => {
+                    setRating(text);
+                    console.log('Rating:', text);
+                  }}
                   keyboardType="numeric"
                 />
                 <TextInput
