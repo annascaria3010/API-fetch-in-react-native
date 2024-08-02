@@ -26,7 +26,7 @@ export default function App() {
   const [price, setPrice] = useState('');
   const [rating, setRating] = useState('');
   const [image, setImage] = useState('');
-  const [highestId, setHighestId] = useState(0); // New state for tracking the highest ID
+  const [highestId, setHighestId] = useState(0);
 
   const isDarkMode = useColorScheme() === 'dark';
   const backgroundStyle = {
@@ -46,7 +46,6 @@ export default function App() {
           setIsLoading(false);
           setProducts(result);
           if (result.length > 0) {
-            // Find the highest ID in the existing products
             const maxId = Math.max(...result.map((product) => product.id));
             setHighestId(maxId);
           }
@@ -78,7 +77,7 @@ export default function App() {
 
     try {
       const newProduct = {
-        id: highestId + 1, // Assign the new ID
+        id: highestId + 1,
         title: title,
         price: parseFloat(price),
         rating: {
@@ -103,7 +102,7 @@ export default function App() {
 
       const updatedProducts = [result, ...(Array.isArray(products) ? products : [])];
       setProducts(updatedProducts);
-      setHighestId(newProduct.id); // Update the highest ID
+      setHighestId(newProduct.id);
       console.log('Updated Products:', updatedProducts);
 
       setTitle('');
@@ -127,8 +126,10 @@ export default function App() {
   };
 
   const handleUpdateProduct = async () => {
+    const productId = highestId + 1 || isEditingProduct ;
+
     const updatedProduct = {
-      id: isEditingProduct,
+      id: productId,
       title: title,
       price: parseFloat(price),
       rating: {
@@ -139,7 +140,7 @@ export default function App() {
     };
 
     try {
-      const response = await fetch(`https://fakestoreapi.com/products/${isEditingProduct}`, {
+      const response = await fetch(`https://fakestoreapi.com/products/${productId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -151,7 +152,7 @@ export default function App() {
       result.rating = updatedProduct.rating;
 
       const updatedProducts = products.map((product) =>
-        product.id === isEditingProduct ? result : product
+        product.id === productId ? result : product
       );
       setProducts(updatedProducts);
       console.log('Updated Products:', updatedProducts);
@@ -161,6 +162,7 @@ export default function App() {
       setRating('');
       setImage('');
       setIsEditingProduct(null);
+      setHighestId(Math.max(highestId, productId)); // Update highestId if a new ID is used
     } catch (error) {
       console.error('Error updating product:', error);
       setError('Failed to update product.');
@@ -268,8 +270,7 @@ export default function App() {
                   style={styles.input}
                   placeholder="Title"
                   value={title}
-                  onChangeText={setTitle
-                  }
+                  onChangeText={setTitle}
                 />
                 <TextInput
                   style={styles.input}
