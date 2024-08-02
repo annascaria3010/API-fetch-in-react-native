@@ -26,7 +26,7 @@ export default function App() {
   const [price, setPrice] = useState('');
   const [rating, setRating] = useState('');
   const [image, setImage] = useState('');
-  const [highestId, setHighestId] = useState(0);
+  const [highestId, setHighestId] = useState(0); // New state for tracking the highest ID
 
   const isDarkMode = useColorScheme() === 'dark';
   const backgroundStyle = {
@@ -87,8 +87,8 @@ export default function App() {
         },
         image: image,
       };
-      
-      console.log('New Product:', newProduct); // Log the new product
+
+      console.log('New Product:', newProduct);
 
       const response = await fetch('https://fakestoreapi.com/products', {
         method: 'POST',
@@ -99,12 +99,12 @@ export default function App() {
       });
 
       const result = await response.json();
-      result.rating = newProduct.rating;  // Manually add the rating to the result
+      result.rating = newProduct.rating;
 
       const updatedProducts = [result, ...(Array.isArray(products) ? products : [])];
       setProducts(updatedProducts);
       setHighestId(newProduct.id); // Update the highest ID
-      console.log('Updated Products:', updatedProducts);  // <-- Log the updated products
+      console.log('Updated Products:', updatedProducts);
 
       setTitle('');
       setPrice('');
@@ -112,8 +112,8 @@ export default function App() {
       setImage('');
       setIsAddingProduct(false);
     } catch (error) {
-      console.error('Error adding new post:', error);
-      setError('Failed to add new post.');
+      console.error('Error adding new product:', error);
+      setError('Failed to add new product.');
       setIsAddingProduct(false);
     }
   };
@@ -126,45 +126,45 @@ export default function App() {
     setImage(product.image);
   };
 
-  const handleUpdateProduct = async() => {
+  const handleUpdateProduct = async () => {
     const updatedProduct = {
       id: isEditingProduct,
       title: title,
       price: parseFloat(price),
       rating: {
-          rate: parseFloat(rating),
-          count: 1,
-        },
+        rate: parseFloat(rating),
+        count: 1,
+      },
       image: image,
-
     };
 
     try {
       const response = await fetch(`https://fakestoreapi.com/products/${isEditingProduct}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(updatedProduct),
-    });
-    const result = await response.json();
-    result.rating = updatedProduct.rating;
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updatedProduct),
+      });
 
-    const updatedProducts = products.map((product) =>
-      product.id === isEditingProduct ? result : product
-    );
-    setProducts(updatedProducts);
-    console.log('Updated Products:', updatedProducts);
+      const result = await response.json();
+      result.rating = updatedProduct.rating;
 
-          setTitle('');
-          setPrice('');
-          setRating('');
-          setImage('');
-          setIsEditingProduct(null);
-        } catch (error) {
-          console.error('Error updating product:', error);
-          setError('Failed to update product.');
-        }
+      const updatedProducts = products.map((product) =>
+        product.id === isEditingProduct ? result : product
+      );
+      setProducts(updatedProducts);
+      console.log('Updated Products:', updatedProducts);
+
+      setTitle('');
+      setPrice('');
+      setRating('');
+      setImage('');
+      setIsEditingProduct(null);
+    } catch (error) {
+      console.error('Error updating product:', error);
+      setError('Failed to update product.');
+    }
   };
 
   const handleDeleteProduct = (id) => {
@@ -181,43 +181,35 @@ export default function App() {
         setError(error);
       });
   };
-  
-  const renderProduct = ({ item }) => {
-    console.log('Rendering product:', item); // Console log for item
-    const rate = item.rating?.rate || 'N/A';
-    console.log(item.rating,"checking the code");
-    console.log('Product rate:', rate);
-    return (
-      <View key={item.id} style={styles.item}>
-        <Text style={styles.title}>{item.title}</Text>
-        <TouchableOpacity onPress={() => handleSingleSelection(item.id)}>
-          <Image source={{ uri: item.image }} style={styles.image} />
-        </TouchableOpacity>
-        {selected === item.id ? (
-          <View style={styles.content}>
-            <Text style={styles.price}>Price: ${item.price}</Text>
-            <Text style={styles.rating}>Rating: {item.rating?.rate || 'N/A'}</Text>
-            <View style={styles.buttonRow}>
-              <TouchableOpacity
-                style={styles.deleteButton}
-                onPress={() => handleDeleteProduct(item.id)}
-              >
-                <Text style={styles.deleteButtonText}>Delete</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.editButton}
-                onPress={() => handleEditProduct(item)}
-              >
-                <Text style={styles.editButtonText}>Edit</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        ) : null}
-      </View>
-    );
-  };
 
- 
+  const renderProduct = ({ item }) => (
+    <View key={item.id} style={styles.item}>
+      <Text style={styles.title}>{item.title}</Text>
+      <TouchableOpacity onPress={() => handleSingleSelection(item.id)}>
+        <Image source={{ uri: item.image }} style={styles.image} />
+      </TouchableOpacity>
+      {selected === item.id ? (
+        <View style={styles.content}>
+          <Text style={styles.price}>Price: ${item.price}</Text>
+          <Text style={styles.rating}>Rating: {item.rating?.rate || 'N/A'}</Text>
+          <View style={styles.buttonRow}>
+            <TouchableOpacity
+              style={styles.deleteButton}
+              onPress={() => handleDeleteProduct(item.id)}
+            >
+              <Text style={styles.deleteButtonText}>Delete</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.editButton}
+              onPress={() => handleEditProduct(item)}
+            >
+              <Text style={styles.editButtonText}>Edit</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      ) : null}
+    </View>
+  );
 
   const getContent = () => {
     if (isLoading) {
@@ -229,12 +221,11 @@ export default function App() {
     }
 
     if (showProducts) {
-      console.log('Products:', products); // Log the products array
+      console.log('Products:', products);
       return (
         <>
           <ScrollView style={styles.wrapper}>
             <View style={styles.accordion}>
-
               {products && products.length > 0 ? (
                 products.map((item) => renderProduct({ item }))
               ) : (
@@ -277,7 +268,8 @@ export default function App() {
                   style={styles.input}
                   placeholder="Title"
                   value={title}
-                  onChangeText={setTitle}
+                  onChangeText={setTitle
+                  }
                 />
                 <TextInput
                   style={styles.input}
@@ -305,16 +297,14 @@ export default function App() {
                   value={image}
                   onChangeText={setImage}
                 />
-                {isAddingProduct && (
-                  <TouchableOpacity style={styles.button} onPress={handleAddProduct}>
-                    <Text style={styles.buttonText}>Save</Text>
-                  </TouchableOpacity>
-                )}
-                {isEditingProduct && (
-                  <TouchableOpacity style={styles.button} onPress={handleUpdateProduct}>
-                    <Text style={styles.buttonText}>Update</Text>
-                  </TouchableOpacity>
-                )}
+                <TouchableOpacity
+                  style={styles.button}
+                  onPress={isEditingProduct ? handleUpdateProduct : handleAddProduct}
+                >
+                  <Text style={styles.buttonText}>
+                    {isEditingProduct ? 'Update Product' : 'Add Product'}
+                  </Text>
+                </TouchableOpacity>
               </View>
             )}
           </>
