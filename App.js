@@ -26,6 +26,7 @@ export default function App() {
   const [price, setPrice] = useState('');
   const [rating, setRating] = useState('');
   const [image, setImage] = useState('');
+  const [highestId, setHighestId] = useState(0);
 
   const isDarkMode = useColorScheme() === 'dark';
   const backgroundStyle = {
@@ -44,6 +45,11 @@ export default function App() {
         (result) => {
           setIsLoading(false);
           setProducts(result);
+          if (result.length > 0) {
+            // Find the highest ID in the existing products
+            const maxId = Math.max(...result.map((product) => product.id));
+            setHighestId(maxId);
+          }
         },
         (error) => {
           setIsLoading(false);
@@ -72,6 +78,7 @@ export default function App() {
 
     try {
       const newProduct = {
+        id: highestId + 1, // Assign the new ID
         title: title,
         price: parseFloat(price),
         rating: {
@@ -96,6 +103,7 @@ export default function App() {
 
       const updatedProducts = [result, ...(Array.isArray(products) ? products : [])];
       setProducts(updatedProducts);
+      setHighestId(newProduct.id); // Update the highest ID
       console.log('Updated Products:', updatedProducts);  // <-- Log the updated products
 
       setTitle('');
@@ -118,8 +126,9 @@ export default function App() {
     setImage(product.image);
   };
 
-  const handleUpdateProduct = () => {
+  const handleUpdateProduct = async() => {
     const updatedProduct = {
+      id: isEditingProduct,
       title: title,
       price: parseFloat(price),
       rating: {
@@ -130,29 +139,32 @@ export default function App() {
 
     };
 
-    fetch(`https://fakestoreapi.com/products/${isEditingProduct}`, {
+    try {
+      const response = await fetch(`https://fakestoreapi.com/products/${isEditingProduct}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(updatedProduct),
-    })
-      .then((res) => res.json())
-      .then(
-        (result) => {
-          setProducts((prevProducts) =>
-            prevProducts.map((product) => (product.id === isEditingProduct ? result : product))
-          );
+    });
+    const result = await response.json();
+    result.rating = updatedProduct.rating;
+
+    const updatedProducts = products.map((product) =>
+      product.id === isEditingProduct ? result : product
+    );
+    setProducts(updatedProducts);
+    console.log('Updated Products:', updatedProducts);
+
           setTitle('');
           setPrice('');
           setRating('');
           setImage('');
           setIsEditingProduct(null);
-        },
-        (error) => {
-          setError(error);
+        } catch (error) {
+          console.error('Error updating product:', error);
+          setError('Failed to update product.');
         }
-      );
   };
 
   const handleDeleteProduct = (id) => {
