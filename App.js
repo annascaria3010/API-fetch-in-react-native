@@ -126,7 +126,7 @@ export default function App() {
   };
 
   const handleUpdateProduct = async () => {
-    const productId = highestId + 1 || isEditingProduct ;
+    const productId = isEditingProduct || highestId + 1;
 
     const updatedProduct = {
       id: productId,
@@ -305,6 +305,9 @@ export default function App() {
                   <Text style={styles.buttonText}>
                     {isEditingProduct ? 'Update Product' : 'Add Product'}
                   </Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.button} onPress={handleHomePress}>
+                  <Text style={styles.buttonText}>Cancel</Text>
                 </TouchableOpacity>
               </View>
             )}
