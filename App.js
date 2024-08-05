@@ -26,7 +26,7 @@ export default function App() {
   const [price, setPrice] = useState('');
   const [rating, setRating] = useState('');
   const [image, setImage] = useState('');
-  const [highestId, setHighestId] = useState(0);
+  const [highestId, setHighestId] = useState(0); // New state for tracking the highest ID
 
   const isDarkMode = useColorScheme() === 'dark';
   const backgroundStyle = {
@@ -46,6 +46,7 @@ export default function App() {
           setIsLoading(false);
           setProducts(result);
           if (result.length > 0) {
+            // Find the highest ID in the existing products
             const maxId = Math.max(...result.map((product) => product.id));
             setHighestId(maxId);
           }
@@ -77,7 +78,7 @@ export default function App() {
 
     try {
       const newProduct = {
-        id: highestId + 1,
+        id: highestId + 1, // Assign the new ID
         title: title,
         price: parseFloat(price),
         rating: {
@@ -102,7 +103,7 @@ export default function App() {
 
       const updatedProducts = [result, ...(Array.isArray(products) ? products : [])];
       setProducts(updatedProducts);
-      setHighestId(newProduct.id);
+      setHighestId(newProduct.id); // Update the highest ID
       console.log('Updated Products:', updatedProducts);
 
       setTitle('');
@@ -126,7 +127,13 @@ export default function App() {
   };
 
   const handleUpdateProduct = async () => {
-    const productId = isEditingProduct || highestId + 1;
+    let productId;
+
+    if (!isEditingProduct) {
+      productId = highestId + 1; // Assign to the highest ID + 1 if not editing
+    } else {
+      productId = isEditingProduct;
+    }
 
     const updatedProduct = {
       id: productId,
@@ -141,7 +148,7 @@ export default function App() {
 
     try {
       const response = await fetch(`https://fakestoreapi.com/products/${productId}`, {
-        method: 'PUT',
+        method: isEditingProduct ? 'PUT' : 'POST', // Use PUT if editing, POST if adding new
         headers: {
           'Content-Type': 'application/json',
         },
@@ -151,9 +158,16 @@ export default function App() {
       const result = await response.json();
       result.rating = updatedProduct.rating;
 
-      const updatedProducts = products.map((product) =>
-        product.id === productId ? result : product
-      );
+      let updatedProducts;
+      if (isEditingProduct) {
+        updatedProducts = products.map((product) =>
+          product.id === productId ? result : product
+        );
+      } else {
+        updatedProducts = [result, ...products];
+        setHighestId(productId); // Increment the highest ID only if adding a new product
+      }
+
       setProducts(updatedProducts);
       console.log('Updated Products:', updatedProducts);
 
@@ -162,7 +176,6 @@ export default function App() {
       setRating('');
       setImage('');
       setIsEditingProduct(null);
-      setHighestId(Math.max(highestId, productId)); // Update highestId if a new ID is used
     } catch (error) {
       console.error('Error updating product:', error);
       setError('Failed to update product.');
@@ -296,7 +309,10 @@ export default function App() {
                   style={styles.input}
                   placeholder="Image URL"
                   value={image}
-                  onChangeText={setImage}
+                  onChangeText={(text) => {
+                    setImage(text);
+                    console.log('Image:', text);
+                  }}
                 />
                 <TouchableOpacity
                   style={styles.button}
@@ -306,7 +322,17 @@ export default function App() {
                     {isEditingProduct ? 'Update Product' : 'Add Product'}
                   </Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.button} onPress={handleHomePress}>
+                <TouchableOpacity
+                  style={styles.button}
+                  onPress={() => {
+                    setIsAddingProduct(false);
+                    setIsEditingProduct(null);
+                    setTitle('');
+                    setPrice('');
+                    setRating('');
+                    setImage('');
+                  }}
+                >
                   <Text style={styles.buttonText}>Cancel</Text>
                 </TouchableOpacity>
               </View>
@@ -327,98 +353,84 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#fff',
   },
   wrapper: {
-    padding: 10,
+    flex: 1,
   },
   accordion: {
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 5,
+    flex: 1,
+    width: '100%',
+    padding: 10,
   },
   item: {
-    borderBottomWidth: 1,
-    borderBottomColor: '#ddd',
-    padding: 10,
-    alignItems: 'center',
-  },
-  image: {
-    width: 150,
-    height: 150,
-    resizeMode: 'contain',
-    marginVertical: 10,
+    backgroundColor: '#f9c2ff',
+    padding: 20,
+    marginVertical: 8,
+    borderRadius: 8,
   },
   title: {
-    fontSize: 16,
+    fontSize: 24,
     fontWeight: 'bold',
-    textAlign: 'center',
+  },
+  image: {
+    width: '100%',
+    height: 200,
+    borderRadius: 8,
   },
   content: {
-    padding: 10,
-    alignItems: 'center',
+    marginTop: 10,
   },
   price: {
     fontSize: 18,
-    fontWeight: 'bold',
+    marginTop: 5,
   },
   rating: {
-    fontSize: 16,
-    color: '#888',
-  },
-  button: {
-    backgroundColor: '#000',
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 6,
-    marginVertical: 10,
-  },
-  buttonText: {
-    color: '#fff',
     fontSize: 18,
-    fontWeight: 'bold',
-    textAlign: 'center',
-  },
-  inputContainer: {
-    width: '80%',
-    marginVertical: 10,
-  },
-  input: {
-    height: 40,
-    borderColor: '#ccc',
-    borderWidth: 1,
-    marginBottom: 10,
-    paddingHorizontal: 10,
-    borderRadius: 5,
-  },
-  deleteButton: {
-    backgroundColor: 'red',
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 6,
-    marginTop: 10,
-  },
-  deleteButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  editButton: {
-    backgroundColor: 'blue',
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 6,
-    marginTop: 10,
-  },
-  editButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
+    marginTop: 5,
   },
   buttonRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    width: '60%',
     marginTop: 10,
+  },
+  deleteButton: {
+    backgroundColor: '#ff0000',
+    padding: 10,
+    borderRadius: 8,
+  },
+  deleteButtonText: {
+    color: '#fff',
+    fontSize: 16,
+  },
+  editButton: {
+    backgroundColor: '#0000ff',
+    padding: 10,
+    borderRadius: 8,
+  },
+  editButtonText: {
+    color: '#fff',
+    fontSize: 16,
+  },
+  button: {
+    backgroundColor: '#007bff',
+    padding: 15,
+    borderRadius: 8,
+    marginTop: 10,
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 16,
+    textAlign: 'center',
+  },
+  inputContainer: {
+    width: '80%',
+    marginTop: 20,
+  },
+  input: {
+    backgroundColor: '#f0f0f0',
+    padding: 10,
+    borderRadius: 8,
+    marginBottom: 10,
+    fontSize: 16,
   },
 });
